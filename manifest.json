@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "PdfCraft Viewer",
+  "version": "0.1.0",
+  "description": "Opens PDFs in PdfCraft instead of Chrome's built-in viewer.",
+  "minimum_chrome_version": "120",
+  "background": { "service_worker": "background.js" },
+  "permissions": ["declarativeNetRequest", "webNavigation"],
+  "host_permissions": ["<all_urls>"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
+}
