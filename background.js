@@ -21,8 +21,28 @@ async function installRules() {
   });
 }
 
-chrome.runtime.onInstalled.addListener(installRules);
-chrome.runtime.onStartup.addListener(installRules);
+// Chrome hides file:// pages from the extension until "Allow access to file URLs" is on, and that
+// switch is per computer (never synced). Flag it on the toolbar icon so it's easy to spot.
+async function checkFileAccess() {
+  const allowed = await chrome.extension.isAllowedFileSchemeAccess();
+  await chrome.action.setBadgeText({ text: allowed ? '' : '!' });
+  await chrome.action.setBadgeBackgroundColor({ color: '#d93025' });
+  await chrome.action.setTitle({
+    title: allowed
+      ? 'PdfCraft Viewer'
+      : 'PdfCraft Viewer: local PDFs won\'t open here. Click for the fix.',
+  });
+}
+
+chrome.action.onClicked.addListener(async () => {
+  if (!(await chrome.extension.isAllowedFileSchemeAccess())) {
+    chrome.tabs.create({ url: 'chrome://extensions/?id=' + chrome.runtime.id });
+  }
+});
+
+chrome.runtime.onInstalled.addListener(() => { installRules(); checkFileAccess(); });
+chrome.runtime.onStartup.addListener(() => { installRules(); checkFileAccess(); });
+checkFileAccess();
 
 // file://: request rules don't see local files, so catch the navigation instead.
 // Needs "Allow access to file URLs" on the extension's details page.
